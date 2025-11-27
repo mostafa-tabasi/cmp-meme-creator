@@ -1,4 +1,4 @@
-package com.plcoding.cmp_memecreator.core.theme
+package com.mstf.cmp_memecreator.core.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable

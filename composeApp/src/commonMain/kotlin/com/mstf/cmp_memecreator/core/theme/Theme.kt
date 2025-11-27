@@ -1,10 +1,9 @@
-package com.mstf.cmp_memecreator.theme
+package com.mstf.cmp_memecreator.core.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import com.plcoding.cmp_memecreator.core.theme.Typography
 
 val DarkColorScheme = darkColorScheme(
     surfaceContainerLowest = Color(0xFF0F0D13),
