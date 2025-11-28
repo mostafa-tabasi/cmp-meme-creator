@@ -1,9 +1,11 @@
 package com.mstf.cmp_memecreator.core.presentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.mstf.cmp_memecreator.meme_editor.presentation.MemeEditorScreen
 import com.mstf.cmp_memecreator.meme_gallery.presentation.MemeGalleryScreen
 
@@ -22,7 +24,11 @@ fun NavigationRoot() {
             )
         }
         composable<Route.MemeEditor> {
-            MemeEditorScreen()
+            val templateId = it.toRoute<Route.MemeEditor>().templateId
+            val template = remember(templateId) {
+                memeTemplates.first { it.id == templateId }
+            }
+            MemeEditorScreen(memeTemplate = template)
         }
     }
 }
