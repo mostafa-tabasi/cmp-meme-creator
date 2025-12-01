@@ -6,7 +6,9 @@ data class MemeEditorState(
     val templateSize: IntSize = IntSize.Zero,
     val isLeavingWithoutSaving: Boolean = false,
     val textBoxInteractionState: TextBoxInteractionState = TextBoxInteractionState.None,
-    val memeTexts: List<MemeText> = emptyList(),
+    val memeTexts: List<MemeText> = listOf(
+        MemeText(id = "1", text = "TAP TO EDIT")
+    ),
 )
 
 sealed interface TextBoxInteractionState {
