@@ -64,20 +64,22 @@ fun MemeTextBox(
     }
 
     Box(modifier) {
+        val isMemeTextSelected = (textBoxInteractionState is TextBoxInteractionState.Selected &&
+                textBoxInteractionState.textBoxId == memeText.id) ||
+                (textBoxInteractionState is TextBoxInteractionState.Editing &&
+                        textBoxInteractionState.textBoxId == memeText.id)
         Box(
             modifier = Modifier
                 .sizeIn(maxWidth = maxWidth, maxHeight = maxHeight)
                 .border(
                     width = 2.dp,
-                    color = if (textBoxInteractionState is TextBoxInteractionState.Selected ||
-                        textBoxInteractionState is TextBoxInteractionState.Editing
-                    ) {
-                        Color.White
-                    } else Color.Transparent,
+                    color = if (isMemeTextSelected) Color.White else Color.Transparent,
                     shape = RoundedCornerShape(4.dp)
                 )
                 .background(
-                    color = if (textBoxInteractionState is TextBoxInteractionState.Editing) {
+                    color = if (textBoxInteractionState is TextBoxInteractionState.Editing &&
+                        textBoxInteractionState.textBoxId == memeText.id
+                    ) {
                         Color.Black.copy(alpha = 0.15f)
                     } else Color.Transparent,
                     shape = RoundedCornerShape(4.dp),
@@ -90,7 +92,9 @@ fun MemeTextBox(
             val strokeTextStyle = rememberStrokeTextStyle()
             val fillTextStyle = rememberFillTextStyle()
             val textPadding = 8.dp
-            if (textBoxInteractionState is TextBoxInteractionState.Editing) {
+            if (textBoxInteractionState is TextBoxInteractionState.Editing &&
+                textBoxInteractionState.textBoxId == memeText.id
+            ) {
                 OutlinedImpactTextField(
                     text = memeText.text,
                     onTextChange = onTextChange,
@@ -113,9 +117,7 @@ fun MemeTextBox(
             }
         }
 
-        if (textBoxInteractionState is TextBoxInteractionState.Selected ||
-            textBoxInteractionState is TextBoxInteractionState.Editing
-        ) {
+        if (isMemeTextSelected) {
             Box(
                 modifier = Modifier
                     .size(24.dp)

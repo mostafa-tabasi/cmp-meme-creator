@@ -1,22 +1,27 @@
 package com.mstf.cmp_memecreator.meme_editor.presentation
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cmpmemecreator.composeapp.generated.resources.Res
 import cmpmemecreator.composeapp.generated.resources.meme_template_01
 import com.mstf.cmp_memecreator.core.presentation.MemeTemplate
 import com.mstf.cmp_memecreator.core.theme.MemeCreatorTheme
-import com.mstf.cmp_memecreator.meme_editor.presentation.components.MemeTextBox
+import com.mstf.cmp_memecreator.meme_editor.presentation.components.BottomBar
+import com.mstf.cmp_memecreator.meme_editor.presentation.components.DraggableContainer
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -40,36 +45,72 @@ private fun MemeEditorView(
     state: MemeEditorState,
     onAction: (MemeEditorAction) -> Unit,
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Image(
-            painter = painterResource(template.drawable),
-            contentDescription = null,
-            modifier = Modifier.fillMaxWidth(),
-            contentScale = ContentScale.FillWidth,
-        )
-
-        state.memeTexts.forEach {memeText ->
-            MemeTextBox(
-                memeText = memeText,
-                textBoxInteractionState = state.textBoxInteractionState,
-                maxWidth = 500.dp,
-                maxHeight = 500.dp,
-                onClick = {
-                    onAction(MemeEditorAction.OnSelectMemeText(id = memeText.id))
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    onAction(MemeEditorAction.OnTapOutsideSelectedText)
+                }
+            },
+        bottomBar = {
+            BottomBar(
+                onAddTextClick = {
+                    onAction(MemeEditorAction.OnAddTextClick)
                 },
-                onDoubleClick = {
-                    onAction(MemeEditorAction.OnEditMemeText(id = memeText.id))
-                },
-                onTextChange = {
-                    onAction(MemeEditorAction.OnMemeTextChange(id = memeText.id, it))
-                },
-                onDeleteClick = {
-                    onAction(MemeEditorAction.OnDeleteMemeTextClick(id = memeText.id))
+                onSavaClick = {
+                    onAction(MemeEditorAction.OnSaveMemeClick(template))
                 }
             )
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box {
+                Image(
+                    painter = painterResource(template.drawable),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onSizeChanged {
+                            onAction(MemeEditorAction.OnContainerSizeChange(it))
+                        },
+                    contentScale = ContentScale.FillWidth,
+                )
+                DraggableContainer(
+                    children = state.memeTexts,
+                    textBoxInteractionState = state.textBoxInteractionState,
+                    onChildTransformChanged = { id, offset, rotation, scale ->
+                        onAction(
+                            MemeEditorAction.OnMemeTextTransformChange(
+                                id,
+                                offset,
+                                rotation,
+                                scale,
+                            )
+                        )
+                    },
+                    onChildClick = {
+                        onAction(MemeEditorAction.OnSelectMemeText(it))
+                    },
+                    onChildDoubleClick = {
+                        onAction(MemeEditorAction.OnEditMemeText(it))
+                    },
+                    onChildTextChange = { id, text ->
+                        onAction(MemeEditorAction.OnMemeTextChange(id, text))
+                    },
+                    onChildDeleteClick = {
+                        onAction(MemeEditorAction.OnDeleteMemeTextClick(it))
+                    },
+                    modifier = Modifier
+                        .matchParentSize()
+                )
+            }
+
         }
     }
 }
