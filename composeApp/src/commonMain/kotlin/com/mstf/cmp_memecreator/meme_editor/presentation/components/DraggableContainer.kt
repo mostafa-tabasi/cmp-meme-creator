@@ -16,6 +16,10 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import com.mstf.cmp_memecreator.meme_editor.presentation.MemeText
 import com.mstf.cmp_memecreator.meme_editor.presentation.TextBoxInteractionState
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Composable
 fun DraggableContainer(
@@ -40,10 +44,42 @@ fun DraggableContainer(
             val transformableState =
                 rememberTransformableState { scaleChange, panChange, rotationChange ->
                     val newRotation = child.rotation + rotationChange
+
+                    val angle = newRotation * PI.toFloat() / 180f
+                    val cos = cos(angle)
+                    val sin = sin(angle)
+
+                    val rotatedPanX = panChange.x * cos - panChange.y * sin
+                    val rotatedPanY = panChange.x * sin + panChange.y * cos
+
                     val newScale = (child.scale * scaleChange).coerceIn(0.5f, 2f)
+
+                    val scaledWidth = childWidth * child.scale
+                    val scaledHeight = childHeight * child.scale
+
+                    val visualWidth = abs(scaledWidth * cos) + abs(scaledHeight * sin)
+                    val visualHeight = abs(scaledWidth * sin) + abs(scaledHeight * cos)
+
+                    val scaleOffsetX = (scaledWidth - childWidth) / 2
+                    val scaleOffsetY = (scaledHeight - childHeight) / 2
+
+                    val rotationOffsetX = (visualWidth - scaledWidth) / 2
+                    val rotationOffsetY = (visualHeight - scaledHeight) / 2
+
+                    val minX = scaleOffsetX + rotationOffsetX
+                    val maxX = parentWidth - childWidth - scaleOffsetX - rotationOffsetX
+                    val minY = scaleOffsetY + rotationOffsetY
+                    val maxY = parentHeight - childHeight - scaleOffsetY - rotationOffsetY
+
                     val newOffset = Offset(
-                        x = (child.offsetRatioX * parentWidth + panChange.x),
-                        y = (child.offsetRatioY * parentHeight + panChange.y),
+                        x = (child.offsetRatioX * parentWidth + child.scale * rotatedPanX).coerceIn(
+                            minimumValue = minOf(minX, maxX),
+                            maximumValue = maxOf(minX, maxX)
+                        ),
+                        y = (child.offsetRatioY * parentHeight + child.scale * rotatedPanY).coerceIn(
+                            minimumValue = minOf(minY, maxY),
+                            maximumValue = maxOf(minY, maxY)
+                        ),
                     )
 
                     onChildTransformChanged(
@@ -72,8 +108,12 @@ fun DraggableContainer(
                 MemeTextBox(
                     memeText = child,
                     textBoxInteractionState = textBoxInteractionState,
-                    maxWidth = with(density) { parentWidth.toDp() },
-                    maxHeight = with(density) { parentHeight.toDp() },
+                    maxWidth = with(density) {
+                        (parentWidth / child.scale).toDp()
+                    },
+                    maxHeight = with(density) {
+                        (parentHeight / child.scale).toDp()
+                    },
                     onClick = {
                         onChildClick(child.id)
                     },
